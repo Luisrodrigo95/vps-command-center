@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=totimigracion.es
+Comment=Portal de Extranjería y Trámites
+Exec=google-chrome https://totimigracion.es
+Icon=applications-internet
+Terminal=false
+Categories=Network;WebBrowser;
+StartupNotify=true

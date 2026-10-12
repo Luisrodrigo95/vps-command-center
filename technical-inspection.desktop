@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Technical Inspection CAM
+Comment=Plant Reliability, Punch List & CAM Orchestrator
+Exec=google-chrome https://therodrigo.com/technical-inspection
+Icon=system-run
+Terminal=false
+Categories=Development;Engineering;
+StartupNotify=true

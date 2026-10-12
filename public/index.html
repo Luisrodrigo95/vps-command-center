@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VPS Command Center | KDE Plasma 6 & Fleet Monitor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #080c14;
+            --bg-card: rgba(15, 23, 42, 0.75);
+            --bg-card-hover: rgba(30, 41, 59, 0.85);
+            --border-glow: rgba(56, 189, 248, 0.2);
+            --border-card: rgba(148, 163, 184, 0.12);
+            --cyan: #38bdf8;
+            --teal: #2dd4bf;
+            --purple: #a855f7;
+            --green: #22c55e;
+            --amber: #f59e0b;
+            --red: #ef4444;
+            --pink: #ec4899;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --font-main: 'Outfit', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(168, 85, 247, 0.08) 0%, transparent 40%),
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+            color: var(--text-main);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+
+        /* Top Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            padding: 18px 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            backdrop-filter: blur(16px);
+            border-radius: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .brand-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #0284c7, #0d9488);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+        }
+
+        .brand-title h1 {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-badges {
+            display: flex;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .badge {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-kde {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--cyan);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .badge-deb {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .badge-live {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--green);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .pulse-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 8px var(--green);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid var(--border-card);
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            font-family: var(--font-main);
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--cyan);
+            color: var(--cyan);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(45, 212, 191, 0.2));
+            border-color: rgba(56, 189, 248, 0.4);
+            color: var(--cyan);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.35), rgba(45, 212, 191, 0.35));
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+        }
+
+        .btn-danger {
+            color: #f87171;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: #f87171;
+            color: #fca5a5;
+        }
+
+        /* Telemetry Cards */
+        .telemetry-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .tele-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 14px;
+            padding: 16px 20px;
+            backdrop-filter: blur(12px);
+            transition: all 0.2s;
+        }
+
+        .tele-card:hover {
+            border-color: var(--border-glow);
+            transform: translateY(-2px);
+        }
+
+        .tele-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .tele-head i {
+            font-size: 14px;
+            color: var(--cyan);
+        }
+
+        .tele-val {
+            font-size: 24px;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+
+        .tele-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            font-family: var(--font-mono);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 5px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--teal), var(--cyan));
+            border-radius: 10px;
+            transition: width 0.4s ease;
+        }
+
+        /* Projects Section */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.3px;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+
+        .project-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 16px;
+            padding: 20px;
+            backdrop-filter: blur(12px);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--card-color, var(--cyan));
+            opacity: 0.8;
+        }
+
+        .project-card:hover {
+            border-color: var(--border-glow);
+            background: var(--bg-card-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 14px;
+        }
+
+        .project-identity {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .project-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            background: rgba(255,255,255,0.05);
+            color: var(--card-color, var(--cyan));
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .project-names h2 {
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .project-names p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .status-pill {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+        }
+
+        .status-online {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--green);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .status-error {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--red);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .card-metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: rgba(0,0,0,0.25);
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-bottom: 16px;
+            gap: 8px;
+        }
+
+        .m-item {
+            text-align: center;
+        }
+
+        .m-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .m-val {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            gap: 8px;
+        }
+
+        .endpoint-link {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-muted);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .endpoint-link:hover {
+            color: var(--cyan);
+        }
+
+        .card-btns {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-sm {
+            padding: 6px 10px;
+            font-size: 11px;
+            border-radius: 8px;
+        }
+
+        /* Fleet & Operations Section */
+        .bottom-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 960px) {
+            .bottom-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 16px;
+            padding: 20px;
+            backdrop-filter: blur(12px);
+        }
+
+        .fleet-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .fleet-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.25);
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .fleet-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .fleet-latency {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--cyan);
+            font-weight: 700;
+        }
+
+        .ops-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .op-btn {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-card);
+            padding: 12px;
+            border-radius: 10px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-family: var(--font-main);
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .op-btn:hover {
+            background: rgba(56, 189, 248, 0.1);
+            border-color: var(--cyan);
+            color: var(--cyan);
+        }
+
+        .op-btn i {
+            font-size: 16px;
+            color: var(--cyan);
+        }
+
+        /* Modal Log Viewer */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .modal-content {
+            background: #0b1120;
+            border: 1px solid var(--border-card);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 1000px;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        }
+
+        .modal-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .modal-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .log-terminal {
+            flex: 1;
+            padding: 16px 20px;
+            background: #030712;
+            color: #38bdf8;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            line-height: 1.6;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .log-footer {
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.02);
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
+        /* Toast */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #1e293b;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 10px;
+            border-left: 4px solid var(--cyan);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 2000;
+        }
+
+        #toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header -->
+    <header>
+        <div class="header-brand">
+            <div class="brand-icon">
+                <i class="fa-solid fa-microchip"></i>
+            </div>
+            <div class="brand-title">
+                <h1>
+                    white-stingray-87538
+                    <span class="badge badge-kde"><i class="fa-brands fa-linux"></i> KDE Plasma 6</span>
+                    <span class="badge badge-deb">Debian 13 Trixie</span>
+                </h1>
+                <div class="brand-badges">
+                    <span class="badge badge-live">
+                        <span class="pulse-dot"></span> Production Active
+                    </span>
+                    <span class="badge" style="background: rgba(255,255,255,0.05); color: #cbd5e1;">
+                        <i class="fa-solid fa-desktop"></i> RDP :25400
+                    </span>
+                    <span id="header-time" class="badge" style="background: rgba(255,255,255,0.05); color: var(--cyan); font-family: var(--font-mono);">
+                        00:00:00
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-primary" onclick="refreshData()">
+                <i class="fa-solid fa-arrows-rotate"></i> Actualizar
+            </button>
+            <button class="btn" onclick="openAllLogs('portfolio')">
+                <i class="fa-solid fa-terminal"></i> Terminal Logs
+            </button>
+        </div>
+    </header>
+
+    <!-- Telemetry Row -->
+    <div class="telemetry-row">
+        <div class="tele-card">
+            <div class="tele-head">
+                <span>CPU LOAD</span>
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <div class="tele-val" id="cpu-val">0.0%</div>
+            <div class="tele-sub" id="load-avg">Load: 0.00, 0.00, 0.00</div>
+            <div class="progress-bar"><div class="progress-fill" id="cpu-bar" style="width: 10%;"></div></div>
+        </div>
+
+        <div class="tele-card">
+            <div class="tele-head">
+                <span>MEMORIA RAM</span>
+                <i class="fa-solid fa-memory"></i>
+            </div>
+            <div class="tele-val" id="ram-val">0 MB</div>
+            <div class="tele-sub" id="ram-sub">0 / 4096 MB</div>
+            <div class="progress-bar"><div class="progress-fill" id="ram-bar" style="width: 25%;"></div></div>
+        </div>
+
+        <div class="tele-card">
+            <div class="tele-head">
+                <span>ALMACENAMIENTO SSD</span>
+                <i class="fa-solid fa-hard-drive"></i>
+            </div>
+            <div class="tele-val" id="disk-val">0%</div>
+            <div class="tele-sub" id="disk-sub">Usado: 0G / 25G</div>
+            <div class="progress-bar"><div class="progress-fill" id="disk-bar" style="width: 44%;"></div></div>
+        </div>
+
+        <div class="tele-card">
+            <div class="tele-head">
+                <span>UPTIME HOST</span>
+                <i class="fa-solid fa-clock"></i>
+            </div>
+            <div class="tele-val" id="uptime-val">0d 0h</div>
+            <div class="tele-sub" id="kernel-ver">Debian 13.6 (6.12.101+)</div>
+        </div>
+
+        <div class="tele-card" style="cursor: pointer;" onclick="triggerAction('system', 'renew-ssl')" title="Clic para verificar y renovar certificados SSL">
+            <div class="tele-head">
+                <span>CERTIFICADOS SSL</span>
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div class="tele-val" id="ssl-val" style="color: var(--green);">Válidos</div>
+            <div class="tele-sub" id="ssl-sub">therodrigo / totimigracion</div>
+        </div>
+    </div>
+
+    <!-- Projects Grid -->
+    <div class="section-header">
+        <div class="section-title">
+            <i class="fa-solid fa-cubes" style="color: var(--cyan);"></i>
+            Proyectos en Producción
+        </div>
+        <div style="font-size: 13px; color: var(--text-muted);">
+            Auto-refresco cada 3 segundos
+        </div>
+    </div>
+
+    <div class="projects-grid" id="projects-container">
+        <!-- Rendered dynamically -->
+    </div>
+
+    <!-- Bottom Fleet and Operations -->
+    <div class="bottom-layout">
+        <!-- Fleet Radar -->
+        <div class="panel-box">
+            <div class="section-title" style="font-size: 16px; margin-bottom: 12px;">
+                <i class="fa-solid fa-network-wired" style="color: var(--teal);"></i>
+                Telemetría de la Flota (RRD Ping Nodes)
+            </div>
+            <div class="fleet-list" id="fleet-container">
+                <!-- Fleet items rendered dynamically -->
+            </div>
+        </div>
+
+        <!-- Server Operations -->
+        <div class="panel-box">
+            <div class="section-title" style="font-size: 16px; margin-bottom: 12px;">
+                <i class="fa-solid fa-sliders" style="color: var(--purple);"></i>
+                Operaciones Rápidas del Servidor
+            </div>
+            <div class="ops-grid">
+                <button class="op-btn" onclick="triggerAction('all', 'restart')">
+                    <i class="fa-solid fa-rotate"></i>
+                    <span>Reiniciar Apps Node</span>
+                </button>
+                <button class="op-btn" onclick="triggerAction('nginx', 'restart')">
+                    <i class="fa-solid fa-server"></i>
+                    <span>Recargar Nginx</span>
+                </button>
+                <button class="op-btn" onclick="triggerAction('system', 'test-nginx')">
+                    <i class="fa-solid fa-spell-check"></i>
+                    <span>Test Sintaxis Nginx</span>
+                </button>
+                <button class="op-btn" onclick="triggerAction('system', 'flush-cache')">
+                    <i class="fa-solid fa-broom"></i>
+                    <span>Purgar PageCache</span>
+                </button>
+                <button class="op-btn" onclick="triggerAction('system', 'renew-ssl')" title="Verificar y renovar certificados Let's Encrypt automáticamente si faltan <30 días">
+                    <i class="fa-solid fa-shield-halved" style="color: var(--green);"></i>
+                    <span>Renovar Certs SSL</span>
+                </button>
+                <button class="op-btn" onclick="confirmForceSsl()" title="Forzar emisión y renovación inmediata de todos los certificados SSL con Certbot">
+                    <i class="fa-solid fa-key" style="color: var(--yellow);"></i>
+                    <span>Forzar Nuevo SSL</span>
+                </button>
+            </div>
+            <div style="margin-top: 18px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 10px; font-size: 12px; color: var(--text-muted); font-family: var(--font-mono);">
+                <i class="fa-solid fa-info-circle" style="color: var(--cyan); margin-right: 6px;"></i>
+                Para monitoreo avanzado por consola use: <code>btop</code> o <code>pm2 monit</code> en Konsole.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Log Viewer -->
+<div class="modal" id="log-modal">
+    <div class="modal-content">
+        <div class="modal-head">
+            <div class="modal-title">
+                <i class="fa-solid fa-terminal" style="color: var(--cyan);"></i>
+                <span id="modal-service-name">Logs de Servicio</span>
+            </div>
+            <div>
+                <button class="btn btn-sm btn-primary" onclick="refreshCurrentLogs()">
+                    <i class="fa-solid fa-arrows-rotate"></i> Refrescar
+                </button>
+                <button class="btn btn-sm" onclick="closeLogModal()" style="margin-left: 6px;">
+                    <i class="fa-solid fa-xmark"></i> Cerrar
+                </button>
+            </div>
+        </div>
+        <div class="log-terminal" id="terminal-body">Cargando registros...</div>
+        <div class="log-footer">
+            <span style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);" id="log-timestamp">
+                Última captura: --
+            </span>
+            <span style="font-size: 11px; color: var(--cyan); font-family: var(--font-mono);">
+                KDE Command Center Stream
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast">
+    <i class="fa-solid fa-circle-check" style="color: var(--cyan);"></i>
+    <span id="toast-msg">Acción completada con éxito</span>
+</div>
+
+<script>
+    let currentLogService = 'portfolio';
+
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toast');
+        const span = document.getElementById('toast-msg');
+        span.textContent = msg;
+        toast.style.borderLeftColor = isError ? 'var(--red)' : 'var(--cyan)';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    async function fetchData() {
+        try {
+            const res = await fetch('/api/status');
+            const data = await res.json();
+            renderMetrics(data.metrics, data.ssl);
+            renderProjects(data.projects);
+            renderFleet(data.fleet);
+        } catch(e) {
+            console.error('Error fetching status:', e);
+        }
+    }
+
+    function renderMetrics(m, ssl) {
+        if (!m) return;
+        document.getElementById('ram-val').textContent = `${m.memory.usedMb} MB`;
+        document.getElementById('ram-sub').textContent = `${m.memory.usedMb} / ${m.memory.totalMb} MB (${m.memory.percent}%)`;
+        document.getElementById('ram-bar').style.width = `${m.memory.percent}%`;
+
+        document.getElementById('disk-val').textContent = m.disk.percent;
+        document.getElementById('disk-sub').textContent = `Usado: ${m.disk.used} / ${m.disk.total}`;
+        document.getElementById('disk-bar').style.width = m.disk.percent;
+
+        document.getElementById('uptime-val').textContent = m.uptimeFormatted;
+        document.getElementById('load-avg').textContent = `Load: ${m.loadAvg[0].toFixed(2)}, ${m.loadAvg[1].toFixed(2)}, ${m.loadAvg[2].toFixed(2)}`;
+        
+        const estCpu = Math.min(100, Math.round((m.loadAvg[0] / m.cpuCount) * 100));
+        document.getElementById('cpu-val').textContent = `${estCpu}%`;
+        document.getElementById('cpu-bar').style.width = `${estCpu}%`;
+
+        if (ssl && ssl.length > 0) {
+            const minDays = Math.min(...ssl.filter(s => s.daysLeft !== null).map(s => s.daysLeft));
+            const sslVal = document.getElementById('ssl-val');
+            sslVal.textContent = `${minDays} días`;
+            if (minDays <= 7) {
+                sslVal.style.color = 'var(--red)';
+            } else if (minDays <= 25) {
+                sslVal.style.color = 'var(--yellow)';
+            } else {
+                sslVal.style.color = 'var(--green)';
+            }
+            document.getElementById('ssl-sub').textContent = ssl.map(s => `${s.domain.split('.')[0]}: ${s.daysLeft}d`).join(' | ');
+        }
+    }
+
+    function renderProjects(projects) {
+        const container = document.getElementById('projects-container');
+        if (!projects || projects.length === 0) return;
+
+        container.innerHTML = projects.map(p => {
+            const isOnline = p.data.status === 'online';
+            const statusClass = isOnline ? 'status-online' : 'status-error';
+            const statusText = isOnline ? 'ONLINE' : 'STOPPED';
+
+            return `
+            <div class="project-card" style="--card-color: ${p.color};">
+                <div>
+                    <div class="card-top">
+                        <div class="project-identity">
+                            <div class="project-icon">
+                                <i class="fa-solid ${p.icon}"></i>
+                            </div>
+                            <div class="project-names">
+                                <h2>${p.name}</h2>
+                                <p>${p.subtitle}</p>
+                            </div>
+                        </div>
+                        <div class="status-pill ${statusClass}">
+                            <span class="pulse-dot" style="${!isOnline ? 'background: var(--red); box-shadow: 0 0 8px var(--red);' : ''}"></span>
+                            ${statusText}
+                        </div>
+                    </div>
+
+                    <div class="card-metrics">
+                        <div class="m-item">
+                            <div class="m-label">Puerto</div>
+                            <div class="m-val" style="color: var(--cyan);">${p.port}</div>
+                        </div>
+                        <div class="m-item">
+                            <div class="m-label">PID</div>
+                            <div class="m-val">${p.data.pid || '-'}</div>
+                        </div>
+                        <div class="m-item">
+                            <div class="m-label">RAM</div>
+                            <div class="m-val">${p.data.memory ? p.data.memory + 'M' : '-'}</div>
+                        </div>
+                        <div class="m-item">
+                            <div class="m-label">Latencia</div>
+                            <div class="m-val" style="color: var(--teal);">${p.http ? p.http.latency + 'ms' : '-'}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <a href="${p.publicUrl}" target="_blank" class="endpoint-link" title="${p.publicUrl}">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        ${p.publicUrl.replace('https://', '')}
+                    </a>
+                    <div class="card-btns">
+                        <button class="btn btn-sm" onclick="openAllLogs('${p.actionKey}')" title="Ver logs">
+                            <i class="fa-solid fa-terminal"></i> Logs
+                        </button>
+                        <button class="btn btn-sm btn-primary" onclick="triggerAction('${p.actionKey}', 'restart')" title="Reiniciar servicio">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            `;
+        }).join('');
+    }
+
+    function renderFleet(fleet) {
+        const container = document.getElementById('fleet-container');
+        if (!fleet) return;
+
+        container.innerHTML = fleet.map(node => {
+            const isOnline = node.status === 'ONLINE';
+            const latencyText = isOnline ? `${node.latency} ms` : 'TIMEOUT';
+            const color = isOnline ? 'var(--teal)' : 'var(--red)';
+
+            return `
+            <div class="fleet-item">
+                <div class="fleet-name">
+                    <span class="pulse-dot" style="background: ${color}; box-shadow: 0 0 8px ${color};"></span>
+                    <span>${node.name}</span>
+                    <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);">${node.ip}</span>
+                </div>
+                <div class="fleet-latency" style="color: ${color};">
+                    ${latencyText}
+                </div>
+            </div>
+            `;
+        }).join('');
+    }
+
+    function confirmForceSsl() {
+        if (confirm('¿Deseas forzar la regeneración inmediata de los certificados SSL con Certbot para todos los dominios?')) {
+            triggerAction('system', 'force-renew-ssl');
+        }
+    }
+
+    async function triggerAction(service, action) {
+        const actionLabel = action === 'renew-ssl' ? 'Verificando y renovando certificados SSL...' :
+                            action === 'force-renew-ssl' ? 'Forzando regeneración de certificados SSL...' :
+                            `Ejecutando acción para ${service}...`;
+        showToast(actionLabel);
+        try {
+            const res = await fetch('/api/action', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ service, action })
+            });
+            const data = await res.json();
+            showToast(data.message, !data.success);
+            setTimeout(fetchData, 1000);
+        } catch(e) {
+            showToast(`Error: ${e.message}`, true);
+        }
+    }
+
+    async function openAllLogs(service) {
+        currentLogService = service;
+        document.getElementById('modal-service-name').textContent = `Logs en Vivo: ${service.toUpperCase()}`;
+        document.getElementById('log-modal').style.display = 'flex';
+        await refreshCurrentLogs();
+    }
+
+    async function refreshCurrentLogs() {
+        const term = document.getElementById('terminal-body');
+        term.textContent = 'Obteniendo registros recientes...';
+        try {
+            const res = await fetch(`/api/logs?service=${currentLogService}`);
+            const data = await res.json();
+            term.textContent = data.logs || 'Sin registros disponibles.';
+            term.scrollTop = term.scrollHeight;
+            document.getElementById('log-timestamp').textContent = `Capturado: ${new Date().toLocaleTimeString()}`;
+        } catch(e) {
+            term.textContent = `Error obteniendo logs: ${e.message}`;
+        }
+    }
+
+    function closeLogModal() {
+        document.getElementById('log-modal').style.display = 'none';
+    }
+
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('header-time').textContent = now.toLocaleTimeString();
+    }
+
+    setInterval(updateClock, 1000);
+    setInterval(fetchData, 3000);
+    fetchData();
+    updateClock();
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=PM2 Live Monit
+Comment=Monitor de procesos Node en tiempo real
+Exec=konsole -e pm2 monit
+Icon=utilities-terminal
+Terminal=false
+Categories=Development;System;
+StartupNotify=true

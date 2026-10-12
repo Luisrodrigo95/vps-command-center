@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Project Command Center
+GenericName=VPS Operations Hub
+Comment=Monitoreo en tiempo real de PresWin, therodrigo.com, totimigracion.es y Technical Inspection
+Exec=google-chrome --app=http://127.0.0.1:9090 --window-size=1300,860
+Icon=utilities-system-monitor
+Terminal=false
+Categories=System;Monitor;Utility;
+StartupNotify=true

@@ -1,0 +1,17 @@
+[Unit]
+Description=VPS Projects Command Center (KDE Plasma 6 & Fleet Monitor)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/vps-command-center
+ExecStart=/usr/bin/node /opt/vps-command-center/server.js
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=production
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

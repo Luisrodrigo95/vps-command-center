@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=PresWin Suite
+Comment=Construction Cost Estimator & Price Breakdown
+Exec=google-chrome https://therodrigo.com/preswin
+Icon=accessories-calculator
+Terminal=false
+Categories=Office;Finance;
+StartupNotify=true

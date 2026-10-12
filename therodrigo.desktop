@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=therodrigo.com
+Comment=Personal Portfolio & Telemetry
+Exec=google-chrome https://therodrigo.com
+Icon=applications-internet
+Terminal=false
+Categories=Network;WebBrowser;
+StartupNotify=true
