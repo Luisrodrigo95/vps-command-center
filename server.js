@@ -423,6 +423,11 @@ function getServiceLogs(serviceKey) {
             case 'mail-retention':
                 cmd = 'journalctl -u totimigracion-mail-retention.service -n 50 --no-pager 2>/dev/null; echo "\n[!] --- PROXIMAS LIMPIEZAS (SYSTEMD TIMER) ---"; systemctl list-timers totimigracion-mail-retention.timer --no-pager 2>/dev/null; echo "\n[!] --- ESTADO SERVICIOS POSTFIX & DOVECOT ---"; systemctl status postfix dovecot --no-pager 2>/dev/null';
                 break;
+            case 'security':
+            case 'cves':
+            case 'audit':
+                cmd = '/usr/local/bin/check-vps-cves.sh 2>&1';
+                break;
             default:
                 cmd = 'dmesg | tail -n 60';
         }
@@ -492,6 +497,9 @@ async function performAction(service, action) {
         } else if (action === 'force-renew-ssl') {
             execSync('certbot renew --force-renewal --deploy-hook "systemctl reload nginx" 2>&1');
             return { success: true, message: 'Renovación forzada completada para todos los dominios y Nginx recargado.' };
+        } else if (action === 'audit-cves') {
+            const out = execSync('/usr/local/bin/check-vps-cves.sh 2>&1').toString();
+            return { success: true, message: out };
         }
         return { success: false, message: 'Acción no reconocida' };
     } catch (e) {

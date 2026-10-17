@@ -31,6 +31,17 @@ echo -e "  ${WHITE}Uptime:${RESET}   $UPTIME"
 echo -e "  ${WHITE}Memory:${RESET}   $MEM RAM"
 echo -e "  ${WHITE}Storage:${RESET}  $DISK en /dev/sda1"
 echo -e "  ${WHITE}Load:${RESET}     $LOAD"
+KERNEL_CUR=$(uname -r)
+K_ALERT=""
+if command -v needrestart >/dev/null 2>&1; then
+    K_STA=$(sudo needrestart -b 2>/dev/null | awk -F': ' '/NEEDRESTART-KSTA/ {print $2}')
+    if [ "$K_STA" = "3" ]; then
+        K_ALERT="${YELLOW}[REINICIO PENDIENTE / KERNEL PARCHEADO INSTALADO]${RESET}"
+    else
+        K_ALERT="${TEAL}[AL DÍA]${RESET}"
+    fi
+fi
+echo -e "  ${WHITE}Kernel:${RESET}   $KERNEL_CUR $K_ALERT"
 echo -e "  ${WHITE}RDP:${RESET}      Puerto 25400 (KDE Plasma 6 X11 Session)"
 
 echo -e "\n${CYAN}📦 PRODUCTION PROJECTS STATUS${RESET}"
@@ -107,9 +118,10 @@ echo -e "  [6] Abrir PM2 Monit"
 echo -e "  [7] Abrir Command Center Web (http://127.0.0.1:9090)"
 echo -e "  [8] Depurar correos > 30 días ahora (totimigracion)"
 echo -e "  [9] Ver estado de retención y temporizador (03:30 AM)"
+echo -e "  [10] Diagnóstico CVEs de Sistema y Kernel (check-vps-cves)"
 echo -e "  [q] Salir"
 
-read -p "Selecciona una opción [1-9 / q]: " opt
+read -p "Selecciona una opción [1-10 / q]: " opt
 case "$opt" in
     1) sudo pm2 restart preswin ;;
     2) sudo pm2 restart portfolio ;;
@@ -120,6 +132,7 @@ case "$opt" in
     7) google-chrome --app="http://127.0.0.1:9090" 2>/dev/null & ;;
     8) sudo /usr/local/bin/totimigracion-mail-retention.sh ;;
     9) sudo journalctl -u totimigracion-mail-retention.service -n 25 --no-pager; echo ""; sudo systemctl list-timers totimigracion-mail-retention.timer --no-pager ;;
+    10) /usr/local/bin/check-vps-cves.sh; echo ""; read -p "Presiona Enter para continuar..." dummy ;;
     q|Q) exit 0 ;;
     *) echo "Opción no válida." ;;
 esac
