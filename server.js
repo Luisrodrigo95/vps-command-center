@@ -177,6 +177,9 @@ async function getProjectsStatus() {
     const totiSys = await getSystemdService('totimigraciones.service');
     const citaSys = await getSystemdService('cita-control.service');
     const nginxSys = await getSystemdService('nginx.service');
+    const postfixSys = await getSystemdService('postfix.service');
+    const dovecotSys = await getSystemdService('dovecot.service');
+    const isMailOnline = postfixSys.status === 'online' && dovecotSys.status === 'online';
 
     const [httpPreswin, httpPortfolio, httpToti, httpInspection, httpCita] = await Promise.all([
         checkHttp('http://127.0.0.1:4000/'),
@@ -309,6 +312,63 @@ async function getProjectsStatus() {
             actionKey: 'darkbot'
         },
         {
+            id: 'pikabot',
+            name: 'Pikabot Suite',
+            subtitle: 'DarkOrbit Bot & Tools (JDK 21)',
+            badge: 'OpenJDK 21',
+            port: 'GUI',
+            publicUrl: 'Desktop: /home/bombi/Documents/Pikabot',
+            localUrl: 'Desktop GUI',
+            path: '/home/bombi/Documents/Pikabot',
+            icon: 'fa-gamepad',
+            color: '#eab308',
+            data: (() => {
+                let pid = 0, mem = 0;
+                try {
+                    const pOut = execSync("pgrep -f '[Pp]ika[Bb]ot.*\\.jar' 2>/dev/null").toString().trim().split('\n')[0];
+                    pid = parseInt(pOut, 10) || 0;
+                    if (pid > 0) {
+                        const rss = execSync(`ps -o rss= -p ${pid} 2>/dev/null`).toString().trim();
+                        mem = Math.round(parseInt(rss, 10) / 1024) || 0;
+                    }
+                } catch(e) {}
+                return {
+                    status: pid > 0 ? 'online' : 'stopped',
+                    pid: pid,
+                    memory: mem,
+                    cpu: 0,
+                    uptime: pid > 0 ? 'activo' : 'inactivo',
+                    restarts: 0
+                };
+            })(),
+            http: { ok: true, code: 200, latency: 0 },
+            canRestart: true,
+            actionKey: 'pikabot'
+        },
+        {
+            id: 'totimail',
+            name: 'TotiMail & Retention',
+            subtitle: 'Postfix, Dovecot & Auto-Purge (30d)',
+            badge: 'Mail Core',
+            port: '25/993/587',
+            publicUrl: 'https://mail.totimigracion.es',
+            localUrl: 'Maildir /var/mail/vhosts',
+            path: '/var/mail/vhosts/totimigracion.es',
+            icon: 'fa-envelope-open-text',
+            color: '#f43f5e',
+            data: {
+                status: isMailOnline ? 'online' : 'error',
+                pid: postfixSys.pid || dovecotSys.pid || 0,
+                memory: (postfixSys.memory || 0) + (dovecotSys.memory || 0),
+                cpu: 0,
+                uptime: postfixSys.uptime || 'online',
+                restarts: 0
+            },
+            http: { ok: true, code: 200, latency: 1 },
+            canRestart: true,
+            actionKey: 'mail'
+        },
+        {
             id: 'nginx',
             name: 'Nginx Reverse Proxy',
             subtitle: 'Edge Gateway, SSL Term & Static Caching',
@@ -347,13 +407,21 @@ function getServiceLogs(serviceKey) {
                 cmd = 'journalctl -u cita-control.service -n 100 --no-pager 2>/dev/null';
                 break;
             case 'darkbot':
-                cmd = 'tail -n 80 /home/bombi/DarkBot/darkbot.log 2>/dev/null; tail -n 80 /home/bombi/DarkBot/logs/* 2>/dev/null; echo "\n[!] --- DarkBot Libs ---"; ls -la /home/bombi/DarkBot/lib';
+                cmd = 'tail -n 80 /home/bombi/Documents/darkbot/darkbot.log 2>/dev/null; tail -n 80 /home/bombi/Documents/darkbot/logs/* 2>/dev/null; echo "\n[!] --- DarkBot Libs ---"; ls -la /home/bombi/Documents/darkbot/lib';
+                break;
+            case 'pikabot':
+                cmd = 'tail -n 80 /home/bombi/Documents/Pikabot/pikabot.log 2>/dev/null; echo "\n[!] --- Archivos en Pikabot ---"; ls -la /home/bombi/Documents/Pikabot/';
                 break;
             case 'nginx':
                 cmd = 'tail -n 60 /var/log/nginx/error.log 2>/dev/null; echo "\n[!] --- ACCESS LOG ---"; tail -n 40 /var/log/nginx/access.log 2>/dev/null';
                 break;
             case 'xrdp':
                 cmd = 'journalctl -u xrdp.service -n 100 --no-pager 2>/dev/null';
+                break;
+            case 'mail':
+            case 'totimail':
+            case 'mail-retention':
+                cmd = 'journalctl -u totimigracion-mail-retention.service -n 50 --no-pager 2>/dev/null; echo "\n[!] --- PROXIMAS LIMPIEZAS (SYSTEMD TIMER) ---"; systemctl list-timers totimigracion-mail-retention.timer --no-pager 2>/dev/null; echo "\n[!] --- ESTADO SERVICIOS POSTFIX & DOVECOT ---"; systemctl status postfix dovecot --no-pager 2>/dev/null';
                 break;
             default:
                 cmd = 'dmesg | tail -n 60';
@@ -370,8 +438,12 @@ async function performAction(service, action) {
             switch(service) {
                 case 'darkbot':
                     execSync('pkill -f DarkBot.jar 2>/dev/null || true');
-                    execSync('sudo -u bombi DISPLAY=:10 nohup /home/bombi/DarkBot/start-darkbot.sh > /home/bombi/DarkBot/darkbot.log 2>&1 &');
-                    return { success: true, message: 'DarkBot iniciado en la sesión gráfica KDE' };
+                    execSync('sudo -u bombi DISPLAY=:10 nohup /home/bombi/Documents/darkbot/start-darkbot.sh > /home/bombi/Documents/darkbot/darkbot.log 2>&1 &');
+                    return { success: true, message: 'DarkBot iniciado con Java 17 en la sesión gráfica KDE' };
+                case 'pikabot':
+                    execSync("pkill -f '[Pp]ika[Bb]ot.*\\.jar' 2>/dev/null || true");
+                    execSync('sudo -u bombi DISPLAY=:10 nohup /home/bombi/Documents/Pikabot/start-pikabot.sh > /home/bombi/Documents/Pikabot/pikabot.log 2>&1 &');
+                    return { success: true, message: 'Pikabot iniciado con Java 21 en la sesión gráfica KDE' };
                 case 'preswin':
                     execSync('pm2 restart preswin');
                     return { success: true, message: 'PresWin reiniciado exitosamente en PM2' };
@@ -391,6 +463,13 @@ async function performAction(service, action) {
                     execSync('pm2 restart all && systemctl reload nginx');
                     return { success: true, message: 'Todos los servicios Node y Nginx reiniciados' };
             }
+        } else if (action === 'purge-mail-retention') {
+            const out = execSync('/usr/local/bin/totimigracion-mail-retention.sh 2>&1').toString().trim();
+            const lastLine = out.split('\n').pop() || 'Completado con éxito.';
+            return { success: true, message: `Depuración (>30d) ejecutada: ${lastLine}` };
+        } else if (action === 'status-mail-retention') {
+            const out = execSync('systemctl list-timers totimigracion-mail-retention.timer --no-pager 2>&1').toString();
+            return { success: true, message: out };
         } else if (action === 'test-nginx') {
             const out = execSync('nginx -t 2>&1').toString();
             return { success: true, message: out };

@@ -55,7 +55,7 @@ fi
 
 # Check Technical Inspection
 INSP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 1.5 http://127.0.0.1:3000/technical-inspection 2>/dev/null)
-if [ "$INSP_STATUS" = "200" ] || [ "$INSP_STATUS" = "301" ] || [ "$INSP_STATUS" = "302" ]; then
+if [ "$INSP_STATUS" = "200" ] || [ "$INSP_STATUS" = "301" ] || [ "$INSP_STATUS" = "302" ] || [ "$INSP_STATUS" = "401" ]; then
     printf "  ${WHITE}%-22s${RESET} ${TEAL}%-12s${RESET} %-10s %-14s ${GRAY}%-18s${RESET}\n" "Technical Inspection" "[ONLINE]" "3000" "Express Sub" "/technical-inspection"
 else
     printf "  ${WHITE}%-22s${RESET} ${RED}%-12s${RESET} %-10s %-14s ${GRAY}%-18s${RESET}\n" "Technical Inspection" "[OFFLINE]" "3000" "Express Sub" "/technical-inspection"
@@ -71,10 +71,10 @@ fi
 
 # Check Appointment Checker
 CITA_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 1.5 http://127.0.0.1:8090/ 2>/dev/null)
-if [ "$CITA_STATUS" = "200" ] || [ "$CITA_STATUS" = "302" ]; then
-    printf "  ${WHITE}%-22s${RESET} ${TEAL}%-12s${RESET} %-10s %-14s ${GRAY}%-18s${RESET}\n" "Appointment Checker" "[ONLINE]" "8090" "Systemd" "/Appointment_Checker"
+if [ "$CITA_STATUS" = "200" ] || [ "$CITA_STATUS" = "302" ] || [ "$CITA_STATUS" = "401" ]; then
+    printf "  ${WHITE}%-22s${RESET} ${TEAL}%-12s${RESET} %-10s %-14s ${GRAY}%-18s${RESET}\n" "Appointment Checker" "[ONLINE]" "8090" "Systemd" "totimigracion.es/admin"
 else
-    printf "  ${WHITE}%-22s${RESET} ${RED}%-12s${RESET} %-10s %-14s ${GRAY}%-18s${RESET}\n" "Appointment Checker" "[OFFLINE]" "8090" "Systemd" "/Appointment_Checker"
+    printf "  ${WHITE}%-22s${RESET} ${RED}%-12s${RESET} %-10s %-14s ${GRAY}%-18s${RESET}\n" "Appointment Checker" "[OFFLINE]" "8090" "Systemd" "totimigracion.es/admin"
 fi
 
 # Check Nginx
@@ -105,9 +105,11 @@ echo -e "  [4] Recargar Nginx"
 echo -e "  [5] Abrir Btop Monitor"
 echo -e "  [6] Abrir PM2 Monit"
 echo -e "  [7] Abrir Command Center Web (http://127.0.0.1:9090)"
+echo -e "  [8] Depurar correos > 30 días ahora (totimigracion)"
+echo -e "  [9] Ver estado de retención y temporizador (03:30 AM)"
 echo -e "  [q] Salir"
 
-read -p "Selecciona una opción [1-7 / q]: " opt
+read -p "Selecciona una opción [1-9 / q]: " opt
 case "$opt" in
     1) sudo pm2 restart preswin ;;
     2) sudo pm2 restart portfolio ;;
@@ -116,6 +118,8 @@ case "$opt" in
     5) btop ;;
     6) pm2 monit ;;
     7) google-chrome --app="http://127.0.0.1:9090" 2>/dev/null & ;;
+    8) sudo /usr/local/bin/totimigracion-mail-retention.sh ;;
+    9) sudo journalctl -u totimigracion-mail-retention.service -n 25 --no-pager; echo ""; sudo systemctl list-timers totimigracion-mail-retention.timer --no-pager ;;
     q|Q) exit 0 ;;
     *) echo "Opción no válida." ;;
 esac

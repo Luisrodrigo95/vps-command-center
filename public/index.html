@@ -777,6 +777,14 @@
                     <i class="fa-solid fa-broom"></i>
                     <span>Purgar PageCache</span>
                 </button>
+                <button class="op-btn" onclick="triggerAction('system', 'purge-mail-retention')" title="Depurar correos con más de 30 días de antigüedad en Dovecot">
+                    <i class="fa-solid fa-broom-ball" style="color: var(--pink);"></i>
+                    <span>Depurar Correos (>30d)</span>
+                </button>
+                <button class="op-btn" onclick="openAllLogs('mail')" title="Ver estado del temporizador (03:30 AM) y registros de limpieza de correo">
+                    <i class="fa-solid fa-clock-rotate-left" style="color: var(--teal);"></i>
+                    <span>Logs & Timer Retención</span>
+                </button>
                 <button class="op-btn" onclick="triggerAction('system', 'renew-ssl')" title="Verificar y renovar certificados Let's Encrypt automáticamente si faltan <30 días">
                     <i class="fa-solid fa-shield-halved" style="color: var(--green);"></i>
                     <span>Renovar Certs SSL</span>
